@@ -1,0 +1,402 @@
+/*
+   Artificial Neural Network
+   
+   complicated code structures
+*/
+{$CLEO .csi}
+
+thread 'ann'
+0000: NOP
+0000: NOP
+0000: NOP
+gosub @ann_neuralLayer
+0000: NOP
+0000: NOP
+0000: NOP
+goto @ann_main
+
+// ====================
+
+// Neural Network Layers
+:ann_neuralLayer
+wait 41 ms
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+// Layer: hidden 1 (fixed)
+0005: $weight1_LH1 = 0.0 
+0005: $bias1_LH1 = 0.0 
+0005: $weight2_LH1 = 0.0 
+0005: $bias2_LH1 = 0.0 
+
+// Randomized
+/*
+0208: $weight1_LH1 = random_float_in_ranges 2.8 23.94 
+0208: $bias1_LH1 = random_float_in_ranges 2.8 23.94 
+0208: $weight2_LH1 = random_float_in_ranges 2.8 23.94 
+0208: $bias2_LH1 = random_float_in_ranges 2.8 23.94 
+*/
+
+// Layer: hidden 2 (fixed)
+0005: $weight1_LH2 = 0.0 
+0005: $bias1_LH2 = 0.0 
+0005: $weight2_LH2 = 0.0 
+0005: $bias2_LH2 = 0.0 
+
+// Randomized
+/*
+0208: $weight1_LH2 = random_float_in_ranges 2.8 23.94 
+0208: $bias1_LH2 = random_float_in_ranges 2.8 23.94 
+0208: $weight2_LH2 = random_float_in_ranges 2.8 23.94 
+0208: $bias2_LH2 = random_float_in_ranges 2.8 23.94 
+*/
+
+// Layer: output (fixed)
+0005: $weight1_LO1 = 0.0 
+0005: $bias1_LO1 = 0.0 
+0005: $weight2_LO1 = 0.0 
+0005: $bias2_LO1 = 0.0
+
+// Randomized
+/*
+0208: $weight1_LO1 = random_float_in_ranges 2.8 23.94 
+0208: $bias1_LO1 = random_float_in_ranges 2.8 23.94 
+*/
+
+// End of neural network layers
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+return
+
+// ====================
+
+// Activation function (ReLu)
+:ann_relu
+wait 41 ms
+if
+0024:   $dexMatrix > $dexBias // (float) 
+jf @ann_relu_false
+0000: NOP
+0009: $MatrixValue += $dexMatrix
+//0086: $MatrixValue = $dexMatrix // (float) 
+//00BC: show_text_highpriority GXT 'RELU_T' time 1000 flag 1  // ~s~Come back between 9:00 and 17:00.
+return
+
+:ann_relu_false
+0000: NOP
+//00BC: show_text_highpriority GXT 'RELU_F' time 1000 flag 1  // ~s~Come back between 9:00 and 17:00.
+return
+// End of activation function (ReLu)
+
+// ====================
+
+// Activation function (ReLu derivative)
+:ann_relu_derivative
+wait 41 ms
+if
+0018:   $dexErrorValue > 0 
+jf @ann_relu_derivative_false
+0004: $Derivative = 0 
+return
+
+:ann_relu_derivative_false
+0004: $Derivative = 1 
+return
+
+// End of activation function (ReLu derivative)
+
+// ====================
+
+// Feed forward
+:ann_feedforward
+wait 41 ms
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+0005: $Output1 = 0.0
+0005: $Output2 = 0.0
+0005: $MatrixValue = 0.0
+//gosub @ann_neuralLayer
+
+// Feedforward: Hidden layer 1
+0011: $weight1_LH1 *= $input_value // (float) 
+0086: $dexMatrix = $weight1_LH1 // (float) 
+0086: $dexBias = $bias1_LH1 // (float) 
+gosub @ann_relu
+0005: $PreviousValueLH1 = $MatrixValue 
+gosub @ann_feedforward_LH2_n1
+0005: $MatrixValue = $PreviousValueLH1
+gosub @ann_feedforward_LH2_n2
+
+0011: $weight2_LH1 *= $input_value // (float) 
+0086: $dexMatrix = $weight2_LH1 // (float) 
+0086: $dexBias = $bias2_LH1 // (float) 
+gosub @ann_relu
+0005: $PreviousValueLH1 = $MatrixValue 
+gosub @ann_feedforward_LH2_n1
+0005: $MatrixValue = $PreviousValueLH1
+gosub @ann_feedforward_LH2_n2
+// Returns output value
+
+gosub @ann_backward
+0086: $output_value_action1 = $Output1 // (float) 
+0086: $output_value_action2 = $Output2 // (float) 
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+return
+
+// ==========
+
+// Feedforward: Hidden layer 2
+:ann_feedforward_LH2_n1
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+0011: $weight1_LH2 *= $MatrixValue // (float) 
+0086: $dexMatrix = $weight1_LH2 // (float) 
+0086: $dexBias = $bias1_LH2 // (float) 
+gosub @ann_relu
+0005: $PreviousValueLH2 = $MatrixValue 
+gosub @ann_feedforward_LO1_n1
+0005: $MatrixValue = $PreviousValueLH2
+gosub @ann_feedforward_LO1_n2
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+return
+
+:ann_feedforward_LH2_n2
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+0011: $weight2_LH2 *= $MatrixValue // (float) 
+0086: $dexMatrix = $weight2_LH2 // (float) 
+0086: $dexBias = $bias2_LH2 // (float) 
+gosub @ann_relu
+0005: $PreviousValueLH2 = $MatrixValue 
+gosub @ann_feedforward_LO1_n1
+0005: $MatrixValue = $PreviousValueLH2
+gosub @ann_feedforward_LO1_n2
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+return
+
+// Feedforward: Output layer
+:ann_feedforward_LO1_n1
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+0011: $weight1_LO1 *= $MatrixValue // (float) 
+0086: $dexMatrix = $weight1_LO1 // (float) 
+0086: $dexBias = $bias1_LO1 // (float) 
+gosub @ann_relu
+0009: $Output1 += $MatrixValue
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+return
+
+:ann_feedforward_LO1_n2
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+0011: $weight2_LO1 *= $MatrixValue // (float) 
+0086: $dexMatrix = $weight2_LO1 // (float) 
+0086: $dexBias = $bias2_LO1 // (float) 
+gosub @ann_relu
+0009: $Output2 += $MatrixValue
+0000: NOP
+0000: NOP
+0000: NOP
+0000: NOP
+return
+// End of feed forward
+
+// ====================
+
+// Backprogation
+:ann_backward
+wait 41 ms
+000D: $Output1 -= $Target1
+0086: $Error = $Output1 // (float) 
+0086: $dexErrorValue = $Error // (float) 
+gosub @ann_relu_derivative
+0011: $Error *= $Derivative // (float) 
+0086: $output_delta = $Error // (float) 
+gosub @Adjust
+
+000D: $Output2 -= $Target2
+0086: $Error = $Output2 // (float) 
+0086: $dexErrorValue = $Error // (float) 
+gosub @ann_relu_derivative
+0011: $Error *= $Derivative // (float) 
+0086: $output_delta = $Error // (float) 
+gosub @Adjust
+return
+
+// ==========
+
+:Adjust
+// Calculate output layer delta (neuron 1)
+0011: $output_delta *= $weights1_LO1 // (float) 
+0086: $hidden_error0 = $output_delta // (float) 
+0086: $dexErrorValue = $hidden_error0 // (float) 
+gosub @ann_relu_derivative
+0011: $hidden_error0 *= $Derivative // (float) 
+0086: $hidden_delta0 = $hidden_error0 // (float) 
+// Define variable to adjust the weights and bias
+0005: $AdjustedWeightValue = 0.0
+0005: $AdjustedBiasValue = 0.0
+// Re-adjust output layer weights (neuron 1)
+0011: $hidden_delta0 *= $input_value // (float) 
+0011: $hidden_delta0 *= $learningRate // (float) 
+0059: $AdjustedWeightValue += $hidden_delta0 // (float) 
+0011: $hidden_delta *= $learningRate // (float) 
+0059: $AdjustedBiasValue += $hidden_delta0 // (float) 
+0086: $weight1_LO1 = $AdjustedWeightValue // (float) 
+0086: $bias1_LO1 = $AdjustedBiasValue // (float) 
+
+// Calculate output layer delta (neuron 2)
+0011: $hidden_delta0 *= $weights2_LO1 // (float) 
+0086: $hidden_error1 = $hidden_delta0 // (float) 
+0086: $dexErrorValue = $hidden_error1 // (float) 
+gosub @ann_relu_derivative
+0011: $hidden_error1 *= $Derivative // (float) 
+0086: $hidden_delta1 = $hidden_error1 // (float) 
+// Define variable to adjust the weights and bias
+0005: $AdjustedWeightValue = 0.0
+0005: $AdjustedBiasValue = 0.0
+// Re-adjust output layer weights (neuron 1)
+0011: $hidden_delta1 *= $input_value // (float) 
+0011: $hidden_delta1 *= $learningRate // (float) 
+0059: $AdjustedWeightValue += $hidden_delta1 // (float) 
+0011: $hidden_delta *= $learningRate // (float) 
+0059: $AdjustedBiasValue += $hidden_delta1 // (float) 
+0086: $weight2_LO1 = $AdjustedWeightValue // (float) 
+0086: $bias2_LO1 = $AdjustedBiasValue // (float) 
+
+// ==========
+
+// Calculate output layer delta (Neuron 1)
+0011: $hidden_delta1 *= $weights1_LH2 // (float) 
+0086: $hidden_error2 = $hidden_delta1 // (float) 
+0086: $dexErrorValue = $hidden_error2 // (float) 
+gosub @ann_relu_derivative
+0011: $hidden_error2 *= $Derivative // (float) 
+0086: $hidden_delta2 = $hidden_error2 // (float) 
+// Define variable to adjust the weights and bias
+0005: $AdjustedWeightValue = 0.0
+0005: $AdjustedBiasValue = 0.0
+// Re-adjust hidden 2 layer weights (Neuron 1)
+0011: $hidden_delta2 *= $input_value // (float) 
+0011: $hidden_delta2 *= $learningRate // (float) 
+0059: $AdjustedWeightValue += $hidden_delta2 // (float) 
+0011: $hidden_delta2 *= $learningRate // (float) 
+0059: $AdjustedBiasValue += $hidden_delta2 // (float) 
+0086: $weight1_LH2 = $AdjustedWeightValue // (float) 
+0086: $bias1_LH2 = $AdjustedBiasValue // (float) 
+
+// Calculate output layer delta (Neuron 2)
+0011: $hidden_delta2 *= $weights2_LH2 // (float) 
+0086: $hidden_error3 = $hidden_delta2 // (float) 
+0086: $dexErrorValue = $hidden_error3 // (float) 
+gosub @ann_relu_derivative
+0011: $hidden_error3 *= $Derivative // (float) 
+0086: $hidden_delta3 = $hidden_error3 // (float) 
+// Define variable to adjust the weights and bias
+0005: $AdjustedWeightValue = 0.0
+0005: $AdjustedBiasValue = 0.0
+// Re-adjust hidden 2 layer weights (Neuron 2)
+0011: $hidden_delta3 *= $input_value // (float) 
+0011: $hidden_delta3 *= $learningRate // (float) 
+0059: $AdjustedWeightValue += $hidden_delta3 // (float) 
+0011: $hidden_delta3 *= $learningRate // (float) 
+0059: $AdjustedBiasValue += $hidden_delta3 // (float) 
+0086: $weight2_LH2 = $AdjustedWeightValue // (float) 
+0086: $bias2_LH2 = $AdjustedBiasValue // (float) 
+
+// ==========
+
+// Calculate hidden 1 layer delta (Neuron 1)
+0011: $hidden_delta3 *= $weights1_LH1 // (float) 
+0086: $hidden_error4 = $hidden_delta3 // (float) 
+0086: $dexErrorValue = $hidden_error4 // (float) 
+gosub @ann_relu_derivative
+0011: $hidden_error4 *= $Derivative // (float) 
+0086: $hidden_delta4 = $hidden_error4 // (float) 
+// Define variable to adjust the weights and bias
+0005: $AdjustedWeightValue = 0.0
+0005: $AdjustedBiasValue = 0.0
+// Re-adjust hidden 1 layer weights (Neuron 1)
+0011: $hidden_delta4 *= $input_value // (float) 
+0011: $hidden_delta4 *= $learningRate // (float) 
+0059: $AdjustedWeightValue += $hidden_delta4 // (float) 
+0011: $hidden_delta4 *= $learningRate // (float) 
+0059: $AdjustedBiasValue += $hidden_delta4 // (float) 
+0086: $weight1_LH1 = $AdjustedWeightValue // (float) 
+0086: $bias1_LH1 = $AdjustedBiasValue // (float) 
+
+// Calculate hidden 1 layer delta (Neuron 2)
+0011: $hidden_delta4 *= $weights2_LH1 // (float) 
+0086: $hidden_error5 = $hidden_delta4 // (float) 
+0086: $dexErrorValue = $hidden_error5 // (float) 
+gosub @ann_relu_derivative
+0011: $hidden_error5 *= $Derivative // (float) 
+0086: $hidden_delta5 = $hidden_error5 // (float) 
+// Define variable to adjust the weights and bias
+0005: $AdjustedWeightValue = 0.0
+0005: $AdjustedBiasValue = 0.0
+// Re-adjust hidden 1 layer weights (Neuron 2)
+0011: $hidden_delta5 *= $input_value // (float) 
+0011: $hidden_delta5 *= $learningRate // (float) 
+0059: $AdjustedWeightValue += $hidden_delta5 // (float) 
+0011: $hidden_delta5 *= $learningRate // (float) 
+0059: $AdjustedBiasValue += $hidden_delta5 // (float) 
+0086: $weight2_LH1 = $AdjustedWeightValue // (float) 
+0086: $bias2_LH1 = $AdjustedBiasValue // (float) 
+return
+// End of back progation
+
+// ====================
+
+:ann_main
+wait 800 ms
+010B: 8@ = player $PLAYER_CHAR money 
+0091: $input_value = integer 8@ to_float 
+0007: 14@ = 0.0
+0007: 15@ = 0.0
+00A0: store_actor $PLAYER_ACTOR position_to $72 $73 $74 
+//0509: $input_value = distance_between_XY $72 $73 and_XY 14@ 15@ 
+//0208: $input_value = random_float_in_ranges -30.5 30.5
+0005: $learningRate = 0.1 
+//0005: $input_value = 0.0
+0005: $output_value = 0.0
+0006: 12@ = 0 
+//0005: $Target = 20.0
+0208: $Target1 = random_float_in_ranges 80000.0 -800000.0
+//0005: $Target1 = 70.0
+0208: $Target2 = random_float_in_ranges 80000.0 -800000.0
+//0005: $Target2 = 60.0
+gosub @ann_feedforward
+008E: 12@ = float $output_value_action1 to_integer 
+0109: player $PLAYER_CHAR money += 12@
+008E: 11@ = float $output_value_action2 to_integer 
+0003: shake_camera 11@
+02FD: show_text_2numbers_lowpriority GXT 'RESU' numbers 12@ 11@ time 5000 flag 1  // ~b~1 Pointer!~s~ Distance ~1~.~1~m
+//01E5: show_text_1number_highpriority GXT 'RESU' number 12@ time 5000 flag 1  // ~s~You need $~1~ to compete.
+goto @ann_main
+//end_thread
